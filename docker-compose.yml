@@ -8,29 +8,37 @@ services:
 
   db:
     image: postgres
+    container_name: ${NAME}-rosariodb
     volumes:
       # Will persist container's /var/lib/postgresql/data folder to host's ./plan/db/ folder
       - "./plan/db:/var/lib/postgresql/data"
     environment:
       POSTGRES_USER: rosario
-      POSTGRES_PASSWORD: rosariopwd
+      POSTGRES_PASSWORD: ${DB_PASS}
       POSTGRES_DB: rosariosis
 
   web:
     image: rosariosis/rosariosis:master
+    container_name: ${NAME}-rosarioweb
     #build: .
-    ports:
+    expose:
       # host:container
-      - "80:80"
+      - 80
     depends_on:
       - db
     volumes:
       # Will persist container's /var/www/html folder to host's ./plan/rosariosis/ folder
       - "./plan/rosariosis:/var/www/html"
     environment:
+      VIRTUAL_HOST: ${HOST}
       PGHOST: db
       PGUSER: rosario
-      PGPASSWORD: rosariopwd
+      PGPASSWORD: ${DB_PASS}
       PGDATABASE: rosariosis
-      ROSARIOSIS_YEAR: 2022
+      ROSARIOSIS_YEAR: ${YEAR}
 #      ROSARIOSIS_LANG: 'es_ES'
+
+networks:
+  default:
+    external:
+      name: nginx-proxy
